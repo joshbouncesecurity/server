@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Stripe;
+using Bit.Core.Enums;
 
 #if !OSS
 using Bit.CommCore.Utilities;
@@ -88,7 +89,7 @@ namespace Bit.Admin
             // Jobs service
             Jobs.JobsHostedService.AddJobsServices(services, globalSettings.SelfHosted);
             services.AddHostedService<Jobs.JobsHostedService>();
-            if (globalSettings.SelfHosted)
+            if (globalSettings.SelfHosted && globalSettings.SelectedDatabaseProvider == SupportedDatabaseProviders.SqlServer)
             {
                 services.AddHostedService<HostedServices.DatabaseMigrationHostedService>();
             }
