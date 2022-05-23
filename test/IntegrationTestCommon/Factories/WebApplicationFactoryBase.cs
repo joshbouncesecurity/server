@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using AspNetCoreRateLimit;
 using Bit.Core.Repositories;
 using Bit.Core.Services;
 using Bit.Infrastructure.EntityFramework.Repositories;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace Bit.IntegrationTestCommon.Factories
 {
@@ -31,6 +35,59 @@ namespace Bit.IntegrationTestCommon.Factories
         public string DatabaseName { get; set; } = FactoryConstants.DefaultDatabaseName;
 
         /// <summary>
+        /// Whether or not to run as self hosted, defaults to false
+        /// </summary>
+        /// <remarks>
+        /// This will need to be set BEFORE using the <c>Server</c> property
+        /// </remarks>
+        public bool SelfHosted { get; set; }
+
+        /// <summary>
+        /// A a key value pair into the app configuration
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <remarks>
+        /// This will need to be set BEFORE using the <c>Server</c> property
+        /// </remarks>
+        public void AddConfiguration(string key, string value)
+        {
+            _configureAppConfigurationActions.Add(c => c.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { key, value },
+            }));
+        }
+
+
+        private readonly List<Action<IConfigurationBuilder>> _configureAppConfigurationActions = new();
+
+        public void ReplaceService<TService, TNewService>()
+            where TNewService : TService
+        {
+            _configureTestServicesActions.Add(services =>
+            {
+                var serviceDescriptor = services.First(sd => sd.ServiceType == typeof(TService));
+                services.Remove(serviceDescriptor);
+                services.Add(new ServiceDescriptor(typeof(TService), typeof(TNewService), serviceDescriptor.Lifetime));
+            });
+        }
+
+        public void SubstituteService<TService>(Action<TService> configureService)
+            where TService : class
+        {
+            _configureTestServicesActions.Add(services =>
+            {
+                var substitutedService = Substitute.For<TService>();
+                configureService(substitutedService);
+                var serviceDescriptor = services.First(sd => sd.ServiceType == typeof(TService));
+                services.Remove(serviceDescriptor);
+                services.Add(new ServiceDescriptor(typeof(TService), substitutedService));
+            });
+        }
+
+        private readonly List<Action<IServiceCollection>> _configureTestServicesActions = new();
+
+        /// <summary>
         /// Configure the web host to use an EF in memory database
         /// </summary>
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -39,12 +96,20 @@ namespace Bit.IntegrationTestCommon.Factories
             {
                 c.AddInMemoryCollection(new Dictionary<string, string>
                 {
+                    // Allows the Application to be ran as self hosted or not
+                    { "globalSettings:selfHosted", SelfHosted ? "true" : "false" },
+
                     // Manually insert a EF provider so that ConfigureServices will add EF repositories but we will override
                     // DbContextOptions to use an in memory database
                     { "globalSettings:databaseProvider", "postgres" },
                     { "globalSettings:postgreSql:connectionString", "Host=localhost;Username=test;Password=test;Database=test" },
                 });
             });
+
+            foreach (var configureAppConfigurationAction in _configureAppConfigurationActions)
+            {
+                builder.ConfigureAppConfiguration(configureAppConfigurationAction);
+            }
 
             builder.ConfigureTestServices(services =>
             {
@@ -91,6 +156,11 @@ namespace Bit.IntegrationTestCommon.Factories
                     };
                 });
             });
+
+            foreach (var configureTestServicesAction in _configureTestServicesActions)
+            {
+                builder.ConfigureTestServices(configureTestServicesAction);
+            }
         }
 
         public DatabaseContext GetDatabaseContext()

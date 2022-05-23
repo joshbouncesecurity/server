@@ -4,10 +4,14 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Bit.Core.Context;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
+using Bit.Core.Models;
 using Bit.Core.Models.Api.Request.Accounts;
+using Bit.Core.Models.Business;
 using Bit.Core.Repositories;
+using Bit.Core.Services;
 using Bit.Core.Utilities;
 using Bit.IntegrationTestCommon.Factories;
 using Bit.Test.Common.AutoFixture.Attributes;
@@ -15,6 +19,7 @@ using Bit.Test.Common.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using Xunit;
 
 namespace Bit.Identity.IntegrationTest.Endpoints
@@ -47,6 +52,18 @@ namespace Bit.Identity.IntegrationTest.Endpoints
             var knownConfigurationRoot = knownConfiguration.RootElement;
 
             AssertHelper.AssertEqualJson(endpointRoot, knownConfigurationRoot);
+        }
+
+        [Fact]
+        public async Task TokenEndpoint_BadClientId_Fails()
+        {
+            var context = await _factory.Server.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "client_id", "__z__not_real" }
+            }));
+
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+            await AssertInvalidClient(context);
         }
 
         [Fact]
@@ -187,6 +204,32 @@ namespace Bit.Identity.IntegrationTest.Endpoints
         }
 
         [Fact]
+        public async Task TokenEndpoint_GrantTypePassword_Desktop_Success()
+        {
+            var deviceId = "1499f63c-fcad-4f32-bc3c-24334dc5da30";
+            var username = "test+desktop@email.com";
+
+            await _factory.RegisterAsync(new RegisterRequestModel
+            {
+                Email = username,
+                MasterPasswordHash = "master_password_hash"
+            });
+
+            var context = await _factory.Server.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "scope", "api offline_access" },
+                { "client_id", "desktop" },
+                // { "deviceType", DeviceTypeAsString(DeviceType.LinuxDesktop) },
+                { "grant_type", "password" },
+                { "username", username },
+                { "password", "master_password_hash" },
+            }), context => context.Request.Headers.Add("Auth-Email", CoreHelpers.Base64UrlEncodeString(username)));
+
+            var responseBody = await context.ReadBodyAsStringAsync();
+
+        }
+
+        [Fact]
         public async Task TokenEndpoint_GrantTypeRefreshToken_Success()
         {
             var deviceId = "5a7b19df-0c9d-46bf-a104-8034b5a17182";
@@ -278,9 +321,7 @@ namespace Bit.Identity.IntegrationTest.Endpoints
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
-            var errorBody = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
-            var error = AssertHelper.AssertJsonProperty(errorBody.RootElement, "error", JsonValueKind.String).GetString();
-            Assert.Equal("invalid_client", error);
+            await AssertInvalidClient(context);
         }
 
         /// <summary>
@@ -303,9 +344,7 @@ namespace Bit.Identity.IntegrationTest.Endpoints
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
-            var errorBody = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
-            var error = AssertHelper.AssertJsonProperty(errorBody.RootElement, "error", JsonValueKind.String).GetString();
-            Assert.Equal("invalid_client", error);
+            await AssertInvalidClient(context);
         }
 
         [Fact]
@@ -321,9 +360,7 @@ namespace Bit.Identity.IntegrationTest.Endpoints
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
-            var errorBody = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
-            var error = AssertHelper.AssertJsonProperty(errorBody.RootElement, "error", JsonValueKind.String).GetString();
-            Assert.Equal("invalid_client", error);
+            await AssertInvalidClient(context);
         }
 
         [Theory, BitAutoData]
@@ -357,9 +394,7 @@ namespace Bit.Identity.IntegrationTest.Endpoints
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
-            var errorBody = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
-            var error = AssertHelper.AssertJsonProperty(errorBody.RootElement, "error", JsonValueKind.String).GetString();
-            Assert.Equal("invalid_client", error);
+            await AssertInvalidClient(context);
         }
 
         [Fact]
@@ -375,9 +410,7 @@ namespace Bit.Identity.IntegrationTest.Endpoints
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
-            var errorBody = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
-            var error = AssertHelper.AssertJsonProperty(errorBody.RootElement, "error", JsonValueKind.String).GetString();
-            Assert.Equal("invalid_client", error);
+            await AssertInvalidClient(context);
         }
 
         /// <inheritdoc cref="TokenEndpoint_GrantTypeClientCredentials_AsOrganization_NoIdPart_Fails"/>
@@ -394,10 +427,148 @@ namespace Bit.Identity.IntegrationTest.Endpoints
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
-            var errorBody = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
-            var error = AssertHelper.AssertJsonProperty(errorBody.RootElement, "error", JsonValueKind.String).GetString();
-            Assert.Equal("invalid_client", error);
+            await AssertInvalidClient(context);
         }
+
+        [Fact(Skip = "https://bitwarden.atlassian.net/browse/PS-549")]
+        public async Task TokenEndpoint_GrantTypeClientCredentials_AsInternal_Success()
+        {
+            const string internalKey = "SPECIALKEY";
+            string internalId = Guid.NewGuid().ToString();
+
+            // Use a special factory for this test because we need to be self hosted
+            var factory = new IdentityApplicationFactory
+            {
+                SelfHosted = true,
+                DatabaseName = Guid.NewGuid().ToString(), // Generate a random database name so we don't conflict with cloud database
+            };
+
+            factory.AddConfiguration("globalSettings:internalIdentityKey", internalKey);
+
+            var context = await factory.Server.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "grant_type", "client_credentials" },
+                { "client_id", $"internal.{internalId}" },
+                { "client_secret", internalKey },
+                { "scope", "internal" },
+            }));
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task TokenEndpoint_WithCaptcha_ReturnsBypass()
+        {
+            var username = "test+captcha@email.com";
+            var deviceId = Guid.NewGuid();
+
+            // Use a special factory so we can use a mocked ICaptchaValidationService
+            var factory = new IdentityApplicationFactory();
+            
+            factory.SubstituteService<ICaptchaValidationService>(service =>
+            {
+                service
+                    .RequireCaptchaValidation(Arg.Any<ICurrentContext>(), Arg.Any<User>())
+                    .Returns(true);
+
+                service
+                    .ValidateCaptchaResponseAsync("test_captcha", FactoryConstants.WhitelistedIp, Arg.Any<User>())
+                    .Returns(new CaptchaResponse { Success = true });
+
+                service
+                    .GenerateCaptchaBypassToken(Arg.Any<User>())
+                    .Returns("bypass_token");
+            });
+
+            await factory.RegisterAsync(new RegisterRequestModel
+            {
+                Email = username,
+                MasterPasswordHash = "master_password_hash",
+                CaptchaResponse = "test_captcha",
+            });
+
+            var context = await factory.Server.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "scope", "api offline_access" },
+                { "client_id", "web" },
+                { "deviceType", DeviceTypeAsString(DeviceType.ChromeBrowser) },
+                { "deviceIdentifier", deviceId.ToString() },
+                { "deviceName", "chrome" },
+                { "grant_type", "password" },
+                { "username", username },
+                { "password", "master_password_hash" },
+                { "captchaResponse", "test_captcha" }
+            }), context => context.Request.Headers.Add("Auth-Email", CoreHelpers.Base64UrlEncodeString(username)));
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            using var body = await AssertDefaultTokenBodyAsync(context);
+            var root = body.RootElement;
+            AssertRefreshTokenExists(root);
+            AssertHelper.AssertJsonProperty(root, "ForcePasswordReset", JsonValueKind.False);
+            AssertHelper.AssertJsonProperty(root, "ResetMasterPassword", JsonValueKind.False);
+            var kdf = AssertHelper.AssertJsonProperty(root, "Kdf", JsonValueKind.Number).GetInt32();
+            Assert.Equal(0, kdf);
+            var kdfIterations = AssertHelper.AssertJsonProperty(root, "KdfIterations", JsonValueKind.Number).GetInt32();
+            Assert.Equal(5000, kdfIterations);
+            var bypassToken = AssertHelper.AssertJsonProperty(root, "CaptchaBypassToken", JsonValueKind.String).GetString();
+            Assert.Equal("bypass_token", bypassToken);
+        }
+
+        [Fact]
+        public async Task TokenEndpoint_Requires2FA_BadToken_ReturnsBadRequest()
+        {
+            var username = "test+captcha@email.com";
+            var deviceId = Guid.NewGuid();
+
+            await _factory.RegisterAsync(new RegisterRequestModel
+            {
+                Email = username,
+                MasterPasswordHash = "master_password_hash",
+            });
+
+            var userRepo = _factory.Services.GetRequiredService<IUserRepository>();
+            var user = await userRepo.GetByEmailAsync(username);
+
+            user.SetTwoFactorProviders(new Dictionary<TwoFactorProviderType, TwoFactorProvider>
+            {
+                { TwoFactorProviderType.Authenticator, new TwoFactorProvider
+                {
+                    Enabled = true,
+                    MetaData = new Dictionary<string, object>
+                    {
+                        { "Key", "ORSXG5C7NNSXSMJS" }, // "test_key12" base32 encoded
+                    },
+                }},
+            });
+
+            await userRepo.UpsertAsync(user);
+
+            var context = await _factory.Server.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "scope", "api offline_access" },
+                { "client_id", "web" },
+                { "deviceType", DeviceTypeAsString(DeviceType.ChromeBrowser) },
+                { "deviceIdentifier", deviceId.ToString() },
+                { "deviceName", "chrome" },
+                { "grant_type", "password" },
+                { "username", username },
+                { "password", "master_password_hash" },
+                { "TwoFactorProvider", "Authenticator" },
+                { "TwoFactorToken", "bad_token" },
+            }), context => context.Request.Headers.Add("Auth-Email", CoreHelpers.Base64UrlEncodeString(username)));
+
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+
+            using var body = await AssertHelper.AssertResponseTypeIs<JsonDocument>(context);
+            var root = body.RootElement;
+            var error = AssertHelper.AssertJsonProperty(root, "error", JsonValueKind.String).GetString();
+            Assert.Equal("invalid_grant", error);
+            var errorDescription = AssertHelper.AssertJsonProperty(root, "error_description", JsonValueKind.String).GetString();
+            Assert.Equal("invalid_username_or_password", errorDescription);
+            var errorModelElement = AssertHelper.AssertJsonProperty(root, "ErrorModel", JsonValueKind.Object);
+        }
+
 
         private static string DeviceTypeAsString(DeviceType deviceType)
         {
@@ -415,6 +586,15 @@ namespace Bit.Identity.IntegrationTest.Endpoints
             AssertTokenType(root);
             AssertScope(root, expectedScope);
             return body;
+        }
+
+        private static async Task AssertInvalidClient(HttpContext httpContext)
+        {
+            using var body = await AssertHelper.AssertResponseTypeIs<JsonDocument>(httpContext);
+            var root = body.RootElement;
+
+            var error = AssertHelper.AssertJsonProperty(root, "error", JsonValueKind.String).GetString();
+            Assert.Equal("invalid_client", error);
         }
 
         private static void AssertTokenType(JsonElement tokenResponse)
