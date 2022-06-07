@@ -30,7 +30,6 @@ namespace Bit.Api.Test.Controllers
         private readonly ISendService _sendService;
         private readonly ISendFileStorageService _sendFileStorageService;
         private readonly ILogger<SendsController> _logger;
-        private readonly ICurrentContext _currentContext;
 
         public SendsControllerTests()
         {
@@ -40,7 +39,6 @@ namespace Bit.Api.Test.Controllers
             _sendFileStorageService = Substitute.For<ISendFileStorageService>();
             _globalSettings = new GlobalSettings();
             _logger = Substitute.For<ILogger<SendsController>>();
-            _currentContext = Substitute.For<ICurrentContext>();
 
             _sut = new SendsController(
                 _sendRepository,
@@ -48,8 +46,7 @@ namespace Bit.Api.Test.Controllers
                 _sendService,
                 _sendFileStorageService,
                 _logger,
-                _globalSettings,
-                _currentContext
+                _globalSettings
             );
         }
 
