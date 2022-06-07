@@ -134,7 +134,7 @@ namespace Bit.Core.Test.Services
                 SiteName = "Bitwarden",
             };
 
-            var mailDeliveryService = new MailKitSmtpMailDeliveryService(globalSettings, Substitute.For<ILogger<MailKitSmtpMailDeliveryService>>());
+            var mailDeliveryService = new MailKitSmtpMailDeliveryService(globalSettings);
 
             var handlebarsService = new HandlebarsMailService(globalSettings, mailDeliveryService, new BlockingMailEnqueuingService());
 
