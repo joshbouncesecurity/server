@@ -8,7 +8,6 @@ using Bit.Api.Models.Request;
 using Bit.Api.Models.Response;
 using Bit.Api.Utilities;
 using Bit.Core;
-using Bit.Core.Context;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Exceptions;
