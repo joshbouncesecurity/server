@@ -1,15 +1,17 @@
 ﻿using Bit.Core.Enums;
 
+#nullable enable
+
 namespace Bit.Core.Models.StaticStore
 {
     public class Plan
     {
         public PlanType Type { get; set; }
         public ProductType Product { get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public bool IsAnnual { get; set; }
-        public string NameLocalizationKey { get; set; }
-        public string DescriptionLocalizationKey { get; set; }
+        public string? NameLocalizationKey { get; set; }
+        public string? DescriptionLocalizationKey { get; set; }
         public bool CanBeUsedByBusiness { get; set; }
         public int BaseSeats { get; set; }
         public short? BaseStorageGb { get; set; }
@@ -42,10 +44,10 @@ namespace Bit.Core.Models.StaticStore
         public int? LegacyYear { get; set; }
         public bool Disabled { get; set; }
 
-        public string StripePlanId { get; set; }
-        public string StripeSeatPlanId { get; set; }
-        public string StripeStoragePlanId { get; set; }
-        public string StripePremiumAccessPlanId { get; set; }
+        public string? StripePlanId { get; set; }
+        public string? StripeSeatPlanId { get; set; }
+        public string? StripeStoragePlanId { get; set; }
+        public string? StripePremiumAccessPlanId { get; set; }
         public decimal BasePrice { get; set; }
         public decimal SeatPrice { get; set; }
         public decimal AdditionalStoragePricePerGb { get; set; }

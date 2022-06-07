@@ -10,12 +10,13 @@ using Bit.Core.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class MultiServicePushNotificationService : IPushNotificationService
     {
-        private readonly List<IPushNotificationService> _services = new List<IPushNotificationService>();
-        private readonly ILogger<MultiServicePushNotificationService> _logger;
+        private readonly List<IPushNotificationService> _services = new();
 
         public MultiServicePushNotificationService(
             IHttpClientFactory httpFactory,
@@ -55,8 +56,6 @@ namespace Bit.Core.Services
                     _services.Add(new AzureQueuePushNotificationService(globalSettings, httpContextAccessor));
                 }
             }
-
-            _logger = logger;
         }
 
         public Task PushSyncCipherCreateAsync(Cipher cipher, IEnumerable<Guid> collectionIds)
@@ -144,14 +143,14 @@ namespace Bit.Core.Services
         }
 
         public Task SendPayloadToUserAsync(string userId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             PushToServices((s) => s.SendPayloadToUserAsync(userId, type, payload, identifier, deviceId));
             return Task.FromResult(0);
         }
 
         public Task SendPayloadToOrganizationAsync(string orgId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             PushToServices((s) => s.SendPayloadToOrganizationAsync(orgId, type, payload, identifier, deviceId));
             return Task.FromResult(0);

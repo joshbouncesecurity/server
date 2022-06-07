@@ -16,6 +16,8 @@ using Bit.Core.Settings;
 using Bit.Core.Utilities;
 using HandlebarsDotNet;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class HandlebarsMailService : IMailService
@@ -25,8 +27,8 @@ namespace Bit.Core.Services
         private readonly GlobalSettings _globalSettings;
         private readonly IMailDeliveryService _mailDeliveryService;
         private readonly IMailEnqueuingService _mailEnqueuingService;
-        private readonly Dictionary<string, Func<object, string>> _templateCache =
-            new Dictionary<string, Func<object, string>>();
+        private readonly Dictionary<string, Func<object?, string>> _templateCache =
+            new();
 
         private bool _registeredHelpersAndPartials = false;
 
@@ -168,7 +170,7 @@ namespace Bit.Core.Services
             {
                 OrganizationId = organization.Id,
                 InitialSeatCount = initialSeatCount,
-                CurrentSeatCount = organization.Seats.Value,
+                CurrentSeatCount = organization.Seats.GetValueOrDefault(),
             };
 
             await AddMessageContentAsync(message, "OrganizationSeatsAutoscaled", model);
@@ -232,7 +234,8 @@ namespace Bit.Core.Services
                 return new MailQueueMessage(message, "OrganizationUserInvited", model);
             }
 
-            var messageModels = invites.Select(invite => CreateMessage(invite.orgUser.Email,
+            // Mull Reassuring Justification: If we are at the point of inviting the user there is an email
+            var messageModels = invites.Select(invite => CreateMessage(invite.orgUser.Email!,
                 new OrganizationUserInvitedViewModel
                 {
                     OrganizationName = CoreHelpers.SanitizeForEmail(organizationName, false),
@@ -343,7 +346,7 @@ namespace Bit.Core.Services
             await _mailDeliveryService.SendEmailAsync(message);
         }
 
-        public async Task SendLicenseExpiredAsync(IEnumerable<string> emails, string organizationName = null)
+        public async Task SendLicenseExpiredAsync(IEnumerable<string> emails, string? organizationName = null)
         {
             var message = CreateDefaultMessage("License Expired", emails);
             var model = new LicenseExpiredViewModel
@@ -453,7 +456,7 @@ namespace Bit.Core.Services
             message.TextContent = await RenderAsync($"{templateName}.text", model);
         }
 
-        private async Task<string> RenderAsync<T>(string templateName, T model)
+        private async Task<string?> RenderAsync<T>(string templateName, T model)
         {
             await RegisterHelpersAndPartialsAsync();
             if (!_templateCache.TryGetValue(templateName, out var template))
@@ -468,7 +471,7 @@ namespace Bit.Core.Services
             return template != null ? template(model) : null;
         }
 
-        private async Task<string> ReadSourceAsync(string templateName)
+        private async Task<string?> ReadSourceAsync(string templateName)
         {
             var assembly = typeof(HandlebarsMailService).GetTypeInfo().Assembly;
             var fullTemplateName = $"{Namespace}.{templateName}.hbs";
@@ -477,7 +480,8 @@ namespace Bit.Core.Services
                 return null;
             }
             using (var s = assembly.GetManifestResourceStream(fullTemplateName))
-            using (var sr = new StreamReader(s))
+            using (var sr = new StreamReader(s!)) // Null Reassuring Justification: We have already validated it is a valid resource name
+            // so we should for sure have a non-null stream
             {
                 return await sr.ReadToEndAsync();
             }
@@ -584,7 +588,8 @@ namespace Bit.Core.Services
 
         public async Task SendEmergencyAccessInviteEmailAsync(EmergencyAccess emergencyAccess, string name, string token)
         {
-            var message = CreateDefaultMessage($"Emergency Access Contact Invite", emergencyAccess.Email);
+            // Null Reassuring Justification: We got to the point of inviting the user. The email must exist
+            var message = CreateDefaultMessage($"Emergency Access Contact Invite", emergencyAccess.Email!);
             var model = new EmergencyAccessInvitedViewModel
             {
                 Name = CoreHelpers.SanitizeForEmail(name),

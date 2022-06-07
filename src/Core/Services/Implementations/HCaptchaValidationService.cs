@@ -12,6 +12,8 @@ using Bit.Core.Settings;
 using Bit.Core.Tokens;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class HCaptchaValidationService : ICaptchaValidationService
@@ -39,7 +41,7 @@ namespace Bit.Core.Services
         public string GenerateCaptchaBypassToken(User user) => _tokenizer.Protect(new HCaptchaTokenable(user));
 
         public async Task<CaptchaResponse> ValidateCaptchaResponseAsync(string captchaResponse, string clientIpAddress,
-            User user = null)
+            User? user = null)
         {
             var response = new CaptchaResponse { Success = false };
             if (string.IsNullOrWhiteSpace(captchaResponse))
@@ -65,7 +67,7 @@ namespace Bit.Core.Services
                     { "secret", _globalSettings.Captcha.HCaptchaSecretKey },
                     { "sitekey", SiteKey },
                     { "remoteip", clientIpAddress }
-                })
+                }!), // Null Reassuring Justification: I believe this wasn't properly annotated until .NET 6
             };
 
             HttpResponseMessage responseMessage;
@@ -85,7 +87,7 @@ namespace Bit.Core.Services
             }
 
             using var hcaptchaResponse = await responseMessage.Content.ReadFromJsonAsync<HCaptchaResponse>();
-            response.Success = hcaptchaResponse.Success;
+            response.Success = hcaptchaResponse!.Success; // Null Reassuring Justification: TODO: Need better reason
             var score = hcaptchaResponse.Score.GetValueOrDefault();
             response.MaybeBot = score >= _globalSettings.Captcha.MaybeBotScoreThreshold;
             response.IsBot = score >= _globalSettings.Captcha.IsBotScoreThreshold;
@@ -93,7 +95,7 @@ namespace Bit.Core.Services
             return response;
         }
 
-        public bool RequireCaptchaValidation(ICurrentContext currentContext, User user = null)
+        public bool RequireCaptchaValidation(ICurrentContext currentContext, User? user = null)
         {
             if (user == null)
             {
@@ -101,7 +103,7 @@ namespace Bit.Core.Services
             }
 
             var failedLoginCeiling = _globalSettings.Captcha.MaximumFailedLoginAttempts;
-            var failedLoginCount = user?.FailedLoginCount ?? 0;
+            var failedLoginCount = user.FailedLoginCount;
             var cloudEmailUnverified = !_globalSettings.SelfHosted && !user.EmailVerified;
             return currentContext.IsBot ||
                    _globalSettings.Captcha.ForceCaptchaRequired ||
@@ -128,7 +130,7 @@ namespace Bit.Core.Services
             [JsonPropertyName("score")]
             public double? Score { get; set; }
             [JsonPropertyName("score_reason")]
-            public List<string> ScoreReason { get; set; }
+            public List<string> ScoreReason { get; set; } = default!; // This property isn't referenced. Should this even exist?
 
             public void Dispose() { }
         }

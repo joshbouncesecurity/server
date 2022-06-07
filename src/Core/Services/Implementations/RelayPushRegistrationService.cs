@@ -7,6 +7,8 @@ using Bit.Core.Models.Api;
 using Bit.Core.Settings;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class RelayPushRegistrationService : BaseIdentityClientService, IPushRegistrationService

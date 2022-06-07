@@ -4,6 +4,8 @@ using Bit.Core.Enums;
 using Bit.Core.Models.Data.Organizations.OrganizationUsers;
 using Bit.Core.Models.StaticStore;
 
+#nullable enable
+
 namespace Bit.Core.Utilities
 {
     public class StaticStore
@@ -491,12 +493,13 @@ namespace Bit.Core.Utilities
                     SponsoringProductType = ProductType.Enterprise,
                     StripePlanId = "2021-family-for-enterprise-annually",
                     UsersCanSponsor = (OrganizationUserOrganizationDetails org) =>
-                        GetPlan(org.PlanType).Product == ProductType.Enterprise,
+                        // Null Reassuring Justification: Maybe we should throw on bad plan type and return not-null
+                        GetPlan(org.PlanType)!.Product == ProductType.Enterprise,
                 }
             };
-        public static Plan GetPlan(PlanType planType) =>
+        public static Plan? GetPlan(PlanType planType) =>
             Plans.FirstOrDefault(p => p.Type == planType);
-        public static SponsoredPlan GetSponsoredPlan(PlanSponsorshipType planSponsorshipType) =>
+        public static SponsoredPlan? GetSponsoredPlan(PlanSponsorshipType planSponsorshipType) =>
             SponsoredPlans.FirstOrDefault(p => p.PlanSponsorshipType == planSponsorshipType);
     }
 }

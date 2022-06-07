@@ -6,6 +6,8 @@ using Bit.Core.Settings;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NoopLicensingService : ILicensingService
@@ -42,17 +44,17 @@ namespace Bit.Core.Services
 
         public byte[] SignLicense(ILicense license)
         {
-            return new byte[0];
+            return Array.Empty<byte>();
         }
 
-        public Task<OrganizationLicense> ReadOrganizationLicenseAsync(Organization organization)
+        public Task<OrganizationLicense?> ReadOrganizationLicenseAsync(Organization organization)
         {
-            return Task.FromResult<OrganizationLicense>(null);
+            return Task.FromResult<OrganizationLicense?>(null);
         }
 
-        public Task<OrganizationLicense> ReadOrganizationLicenseAsync(Guid organizationId)
+        public Task<OrganizationLicense?> ReadOrganizationLicenseAsync(Guid organizationId)
         {
-            return Task.FromResult<OrganizationLicense>(null);
+            return Task.FromResult<OrganizationLicense?>(null);
         }
     }
 }

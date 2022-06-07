@@ -10,11 +10,12 @@ using Bit.Core.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NotificationsApiPushNotificationService : BaseIdentityClientService, IPushNotificationService
     {
-        private readonly GlobalSettings _globalSettings;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public NotificationsApiPushNotificationService(
@@ -31,7 +32,6 @@ namespace Bit.Core.Services
                 globalSettings.InternalIdentityKey,
                 logger)
         {
-            _globalSettings = globalSettings;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -50,7 +50,7 @@ namespace Bit.Core.Services
             await PushCipherAsync(cipher, PushType.SyncLoginDelete, null);
         }
 
-        private async Task PushCipherAsync(Cipher cipher, PushType type, IEnumerable<Guid> collectionIds)
+        private async Task PushCipherAsync(Cipher cipher, PushType type, IEnumerable<Guid>? collectionIds)
         {
             if (cipher.OrganizationId.HasValue)
             {
@@ -177,7 +177,7 @@ namespace Bit.Core.Services
             await SendAsync(HttpMethod.Post, "send", request);
         }
 
-        private string GetContextIdentifier(bool excludeCurrentContext)
+        private string? GetContextIdentifier(bool excludeCurrentContext)
         {
             if (!excludeCurrentContext)
             {
@@ -190,14 +190,14 @@ namespace Bit.Core.Services
         }
 
         public Task SendPayloadToUserAsync(string userId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             // Noop
             return Task.FromResult(0);
         }
 
         public Task SendPayloadToOrganizationAsync(string orgId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             // Noop
             return Task.FromResult(0);

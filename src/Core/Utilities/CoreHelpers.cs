@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,8 @@ using IdentityModel;
 using Microsoft.AspNetCore.DataProtection;
 using MimeKit;
 
+#nullable enable
+
 namespace Bit.Core.Utilities
 {
     public static class CoreHelpers
@@ -32,7 +35,7 @@ namespace Bit.Core.Utilities
         private static readonly DateTime _epoc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly DateTime _max = new DateTime(9999, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly Random _random = new Random();
-        private static string _version;
+        private static string? _version;
         private static readonly string _qwertyDvorakMap = "-=qwertyuiop[]asdfghjkl;'zxcvbnm,./_+QWERTYUIO" +
             "P{}ASDFGHJKL:\"ZXCVBNM<>?";
         private static readonly string _dvorakMap = "[]',.pyfgcrl/=aoeuidhtns-;qjkxbmwvz{}\"<>PYFGC" +
@@ -83,7 +86,7 @@ namespace Bit.Core.Utilities
 
         public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> source, int size)
         {
-            T[] bucket = null;
+            T[]? bucket = null;
             var count = 0;
             foreach (var item in source)
             {
@@ -114,11 +117,11 @@ namespace Bit.Core.Utilities
             return Regex.Replace(thumbprint, @"[^\da-fA-F]", string.Empty).ToUpper();
         }
 
-        public static X509Certificate2 GetCertificate(string thumbprint)
+        public static X509Certificate2? GetCertificate(string thumbprint)
         {
             thumbprint = CleanCertificateThumbprint(thumbprint);
 
-            X509Certificate2 cert = null;
+            X509Certificate2? cert = null;
             var certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             certStore.Open(OpenFlags.ReadOnly);
             var certCollection = certStore.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
@@ -158,7 +161,7 @@ namespace Bit.Core.Utilities
             }
         }
 
-        public async static Task<X509Certificate2> GetBlobCertificateAsync(string connectionString, string container, string file, string password)
+        public async static Task<X509Certificate2?> GetBlobCertificateAsync(string connectionString, string container, string file, string password)
         {
             try
             {
@@ -231,7 +234,7 @@ namespace Bit.Core.Utilities
                 throw new ArgumentOutOfRangeException(nameof(length), "length cannot be less than zero.");
             }
 
-            if ((characters?.Length ?? 0) == 0)
+            if (characters.Length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(characters), "characters invalid.");
             }
@@ -342,12 +345,12 @@ namespace Bit.Core.Utilities
         /// This method is subject to the limitations of System.Text.Json. For example, properties with
         /// inaccessible setters will not be set.
         /// </summary>
-        public static T CloneObject<T>(T obj)
+        public static T? CloneObject<T>(T obj)
         {
             return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(obj));
         }
 
-        public static bool SettingHasValue(string setting)
+        public static bool SettingHasValue([NotNullWhen(true)] string? setting)
         {
             var normalizedSetting = setting?.ToLowerInvariant();
             return !string.IsNullOrWhiteSpace(normalizedSetting) && !normalizedSetting.Equals("secret") &&
@@ -410,7 +413,8 @@ namespace Bit.Core.Utilities
             return Convert.FromBase64String(output);
         }
 
-        public static string PunyEncode(string text)
+        [return: NotNullIfNotNull("text")]
+        public static string? PunyEncode(string text)
         {
             if (text == "")
             {
@@ -435,21 +439,21 @@ namespace Bit.Core.Utilities
             }
         }
 
-        public static string FormatLicenseSignatureValue(object val)
+        public static string? FormatLicenseSignatureValue(object val)
         {
             if (val == null)
             {
                 return string.Empty;
             }
 
-            if (val.GetType() == typeof(DateTime))
+            if (val is DateTime dateTimeVal)
             {
-                return ToEpocSeconds((DateTime)val).ToString();
+                return ToEpocSeconds(dateTimeVal).ToString();
             }
 
-            if (val.GetType() == typeof(bool))
+            if (val is bool boolVal)
             {
-                return val.ToString().ToLowerInvariant();
+                return boolVal ? "true" : "false";
             }
 
             if (val is PlanType planType)
@@ -474,8 +478,9 @@ namespace Bit.Core.Utilities
         {
             if (string.IsNullOrWhiteSpace(_version))
             {
-                _version = Assembly.GetEntryAssembly()
-                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                // TODO: NRJ
+                _version = Assembly.GetEntryAssembly()!
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
                     .InformationalVersion;
             }
 
@@ -617,7 +622,7 @@ namespace Bit.Core.Utilities
             return subName;
         }
 
-        public static string GetIpAddress(this Microsoft.AspNetCore.Http.HttpContext httpContext,
+        public static string? GetIpAddress(this Microsoft.AspNetCore.Http.HttpContext httpContext,
             GlobalSettings globalSettings)
         {
             if (httpContext == null)
@@ -648,7 +653,7 @@ namespace Bit.Core.Utilities
                 (!globalSettings.SelfHosted && origin == "https://bitwarden.com");
         }
 
-        public static X509Certificate2 GetIdentityServerCertificate(GlobalSettings globalSettings)
+        public static X509Certificate2? GetIdentityServerCertificate(GlobalSettings globalSettings)
         {
             if (globalSettings.SelfHosted &&
                 SettingHasValue(globalSettings.IdentityServer.CertificatePassword)
@@ -801,7 +806,8 @@ namespace Bit.Core.Utilities
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
 
-            return System.Text.Json.JsonSerializer.Deserialize<T>(jsonData, options);
+            // TODO: NRJ
+            return System.Text.Json.JsonSerializer.Deserialize<T>(jsonData, options)!;
         }
 
         public static string ClassToJsonData<T>(T data)
@@ -824,7 +830,7 @@ namespace Bit.Core.Utilities
             return list;
         }
 
-        public static string DecodeMessageText(this QueueMessage message)
+        public static string? DecodeMessageText(this QueueMessage message)
         {
             var text = message?.MessageText;
             if (string.IsNullOrWhiteSpace(text))
@@ -847,11 +853,12 @@ namespace Bit.Core.Utilities
                 Encoding.UTF8.GetBytes(input1), Encoding.UTF8.GetBytes(input2));
         }
 
-        public static string ObfuscateEmail(string email)
+        [return: NotNullIfNotNull("email")]
+        public static string? ObfuscateEmail(string? email)
         {
             if (email == null)
             {
-                return email;
+                return null;
             }
 
             var emailParts = email.Split('@', StringSplitOptions.RemoveEmptyEntries);

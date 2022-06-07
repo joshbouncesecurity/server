@@ -6,6 +6,8 @@ using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Settings;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class LocalSendStorageService : ISendFileStorageService
@@ -28,7 +30,8 @@ namespace Bit.Core.Services
         {
             await InitAsync();
             var path = FilePath(send, fileId);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            // TODO: NRJ
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             using (var fs = File.Create(path))
             {
                 stream.Seek(0, SeekOrigin.Begin);
@@ -41,7 +44,8 @@ namespace Bit.Core.Services
             await InitAsync();
             var path = FilePath(send, fileId);
             DeleteFileIfExists(path);
-            DeleteDirectoryIfExistsAndEmpty(Path.GetDirectoryName(path));
+            // TODO: NRJ
+            DeleteDirectoryIfExistsAndEmpty(Path.GetDirectoryName(path)!);
         }
 
         public async Task DeleteFilesForOrganizationAsync(Guid organizationId)
@@ -54,7 +58,7 @@ namespace Bit.Core.Services
             await InitAsync();
         }
 
-        public async Task<string> GetSendFileDownloadUrlAsync(Send send, string fileId)
+        public async Task<string?> GetSendFileDownloadUrlAsync(Send send, string fileId)
         {
             await InitAsync();
             return $"{_baseSendUrl}/{RelativeFilePath(send, fileId)}";
@@ -86,8 +90,8 @@ namespace Bit.Core.Services
             return Task.FromResult(0);
         }
 
-        public Task<string> GetSendFileUploadUrlAsync(Send send, string fileId)
-            => Task.FromResult($"/sends/{send.Id}/file/{fileId}");
+        public Task<string?> GetSendFileUploadUrlAsync(Send send, string fileId)
+            => Task.FromResult<string?>($"/sends/{send.Id}/file/{fileId}");
 
         public Task<(bool, long?)> ValidateFileAsync(Send send, string fileId, long expectedFileSize, long leeway)
         {

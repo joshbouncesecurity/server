@@ -6,6 +6,8 @@ using Bit.Core.Enums;
 using Bit.Core.Models.Data;
 using Bit.Core.Settings;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class LocalAttachmentStorageService : IAttachmentStorageService
@@ -24,7 +26,7 @@ namespace Bit.Core.Services
             _baseAttachmentUrl = globalSettings.Attachment.BaseUrl;
         }
 
-        public async Task<string> GetAttachmentDownloadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
+        public async Task<string?> GetAttachmentDownloadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
         {
             await InitAsync();
             return $"{_baseAttachmentUrl}/{cipher.Id}/{attachmentData.AttachmentId}";
@@ -176,8 +178,8 @@ namespace Bit.Core.Services
             organizationId.HasValue ?
             AttachmentFilePath(OrganizationDirectoryPath(cipherId, organizationId.Value, temp), attachmentId) :
             AttachmentFilePath(CipherDirectoryPath(cipherId, temp), attachmentId);
-        public Task<string> GetAttachmentUploadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
-            => Task.FromResult($"{cipher.Id}/attachment/{attachmentData.AttachmentId}");
+        public Task<string?> GetAttachmentUploadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
+            => Task.FromResult<string?>($"{cipher.Id}/attachment/{attachmentData.AttachmentId}");
 
         public Task<(bool, long?)> ValidateFileAsync(Cipher cipher, CipherAttachment.MetaData attachmentData, long leeway)
         {

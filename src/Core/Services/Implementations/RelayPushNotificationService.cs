@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Bit.Core.Context;
@@ -11,6 +12,8 @@ using Bit.Core.Repositories;
 using Bit.Core.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+
+#nullable enable
 
 namespace Bit.Core.Services
 {
@@ -40,20 +43,20 @@ namespace Bit.Core.Services
 
         public async Task PushSyncCipherCreateAsync(Cipher cipher, IEnumerable<Guid> collectionIds)
         {
-            await PushCipherAsync(cipher, PushType.SyncCipherCreate, collectionIds);
+            await PushCipherAsync(cipher, PushType.SyncCipherCreate);
         }
 
         public async Task PushSyncCipherUpdateAsync(Cipher cipher, IEnumerable<Guid> collectionIds)
         {
-            await PushCipherAsync(cipher, PushType.SyncCipherUpdate, collectionIds);
+            await PushCipherAsync(cipher, PushType.SyncCipherUpdate);
         }
 
         public async Task PushSyncCipherDeleteAsync(Cipher cipher)
         {
-            await PushCipherAsync(cipher, PushType.SyncLoginDelete, null);
+            await PushCipherAsync(cipher, PushType.SyncLoginDelete);
         }
 
-        private async Task PushCipherAsync(Cipher cipher, PushType type, IEnumerable<Guid> collectionIds)
+        private async Task PushCipherAsync(Cipher cipher, PushType type)
         {
             if (cipher.OrganizationId.HasValue)
             {
@@ -215,14 +218,16 @@ namespace Bit.Core.Services
             }
         }
 
+        [DoesNotReturn]
         public Task SendPayloadToUserAsync(string userId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             throw new NotImplementedException();
         }
 
+        [DoesNotReturn]
         public Task SendPayloadToOrganizationAsync(string orgId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             throw new NotImplementedException();
         }

@@ -5,6 +5,8 @@ using Bit.Core.Settings;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class MultiServiceMailDeliveryService : IMailDeliveryService
@@ -13,7 +15,7 @@ namespace Bit.Core.Services
         private readonly IMailDeliveryService _sendGridService;
         private readonly int _sendGridPercentage;
 
-        private static Random _random = new Random();
+        private static readonly Random _random = new();
 
         public MultiServiceMailDeliveryService(
             GlobalSettings globalSettings,

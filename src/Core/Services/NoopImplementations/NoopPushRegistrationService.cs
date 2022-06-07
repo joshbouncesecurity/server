@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Bit.Core.Enums;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NoopPushRegistrationService : IPushRegistrationService

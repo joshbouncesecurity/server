@@ -11,6 +11,8 @@ using Bit.Core.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class AmazonSesMailDeliveryService : IMailDeliveryService, IDisposable
@@ -21,7 +23,7 @@ namespace Bit.Core.Services
         private readonly IAmazonSimpleEmailService _client;
         private readonly string _source;
         private readonly string _senderTag;
-        private readonly string _configSetName;
+        private readonly string? _configSetName;
 
         public AmazonSesMailDeliveryService(
             GlobalSettings globalSettings,

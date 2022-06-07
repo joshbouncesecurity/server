@@ -5,6 +5,8 @@ using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Models.Data;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public interface IAttachmentStorageService
@@ -19,8 +21,8 @@ namespace Bit.Core.Services
         Task DeleteAttachmentsForCipherAsync(Guid cipherId);
         Task DeleteAttachmentsForOrganizationAsync(Guid organizationId);
         Task DeleteAttachmentsForUserAsync(Guid userId);
-        Task<string> GetAttachmentUploadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData);
-        Task<string> GetAttachmentDownloadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData);
+        Task<string?> GetAttachmentUploadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData);
+        Task<string?> GetAttachmentDownloadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData);
         Task<(bool, long?)> ValidateFileAsync(Cipher cipher, CipherAttachment.MetaData attachmentData, long leeway);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
+#nullable enable
+
 namespace Bit.Core.Exceptions
 {
     public class BadRequestException : Exception
@@ -27,6 +29,6 @@ namespace Bit.Core.Exceptions
             ModelState = modelState;
         }
 
-        public ModelStateDictionary ModelState { get; set; }
+        public ModelStateDictionary? ModelState { get; set; }
     }
 }

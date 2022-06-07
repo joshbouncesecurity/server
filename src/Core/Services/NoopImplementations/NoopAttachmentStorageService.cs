@@ -5,6 +5,8 @@ using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Models.Data;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NoopAttachmentStorageService : IAttachmentStorageService
@@ -56,14 +58,14 @@ namespace Bit.Core.Services
             return Task.FromResult(0);
         }
 
-        public Task<string> GetAttachmentDownloadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
+        public Task<string?> GetAttachmentDownloadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
         {
-            return Task.FromResult((string)null);
+            return Task.FromResult<string?>(null);
         }
 
-        public Task<string> GetAttachmentUploadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
+        public Task<string?> GetAttachmentUploadUrlAsync(Cipher cipher, CipherAttachment.MetaData attachmentData)
         {
-            return Task.FromResult(default(string));
+            return Task.FromResult<string?>(null);
         }
         public Task<(bool, long?)> ValidateFileAsync(Cipher cipher, CipherAttachment.MetaData attachmentData, long leeway)
         {

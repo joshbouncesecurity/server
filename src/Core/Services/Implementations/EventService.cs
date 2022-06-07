@@ -11,6 +11,8 @@ using Bit.Core.Models.Data.Organizations;
 using Bit.Core.Repositories;
 using Bit.Core.Settings;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class EventService : IEventService
@@ -20,22 +22,19 @@ namespace Bit.Core.Services
         private readonly IProviderUserRepository _providerUserRepository;
         private readonly IApplicationCacheService _applicationCacheService;
         private readonly ICurrentContext _currentContext;
-        private readonly GlobalSettings _globalSettings;
 
         public EventService(
             IEventWriteService eventWriteService,
             IOrganizationUserRepository organizationUserRepository,
             IProviderUserRepository providerUserRepository,
             IApplicationCacheService applicationCacheService,
-            ICurrentContext currentContext,
-            GlobalSettings globalSettings)
+            ICurrentContext currentContext)
         {
             _eventWriteService = eventWriteService;
             _organizationUserRepository = organizationUserRepository;
             _providerUserRepository = providerUserRepository;
             _applicationCacheService = applicationCacheService;
             _currentContext = currentContext;
-            _globalSettings = globalSettings;
         }
 
         public async Task LogUserEventAsync(Guid userId, EventType type, DateTime? date = null)
@@ -110,7 +109,7 @@ namespace Bit.Core.Services
             await _eventWriteService.CreateManyAsync(cipherEvents);
         }
 
-        private async Task<EventMessage> BuildCipherEventMessageAsync(Cipher cipher, EventType type, DateTime? date = null)
+        private async Task<EventMessage?> BuildCipherEventMessageAsync(Cipher cipher, EventType type, DateTime? date = null)
         {
             // Only logging organization cipher events for now.
             if (!cipher.OrganizationId.HasValue || (!_currentContext?.UserId.HasValue ?? true))

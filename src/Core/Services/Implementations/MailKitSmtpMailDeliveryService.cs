@@ -3,21 +3,20 @@ using System.Threading.Tasks;
 using Bit.Core.Settings;
 using Bit.Core.Utilities;
 using MailKit.Net.Smtp;
-using Microsoft.Extensions.Logging;
 using MimeKit;
+
+#nullable enable
 
 namespace Bit.Core.Services
 {
     public class MailKitSmtpMailDeliveryService : IMailDeliveryService
     {
         private readonly GlobalSettings _globalSettings;
-        private readonly ILogger<MailKitSmtpMailDeliveryService> _logger;
-        private readonly string _replyDomain;
+        private readonly string? _replyDomain;
         private readonly string _replyEmail;
 
         public MailKitSmtpMailDeliveryService(
-            GlobalSettings globalSettings,
-            ILogger<MailKitSmtpMailDeliveryService> logger)
+            GlobalSettings globalSettings)
         {
             if (globalSettings.Mail?.Smtp?.Host == null)
             {
@@ -32,7 +31,6 @@ namespace Bit.Core.Services
             }
 
             _globalSettings = globalSettings;
-            _logger = logger;
         }
 
         public async Task SendEmailAsync(Models.Mail.MailMessage message)

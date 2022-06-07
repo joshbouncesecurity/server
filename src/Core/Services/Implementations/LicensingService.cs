@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class LicensingService : ILicensingService
@@ -23,16 +25,14 @@ namespace Bit.Core.Services
         private readonly IGlobalSettings _globalSettings;
         private readonly IUserRepository _userRepository;
         private readonly IOrganizationRepository _organizationRepository;
-        private readonly IOrganizationUserRepository _organizationUserRepository;
         private readonly IMailService _mailService;
         private readonly ILogger<LicensingService> _logger;
 
-        private IDictionary<Guid, DateTime> _userCheckCache = new Dictionary<Guid, DateTime>();
+        private readonly IDictionary<Guid, DateTime> _userCheckCache = new Dictionary<Guid, DateTime>();
 
         public LicensingService(
             IUserRepository userRepository,
             IOrganizationRepository organizationRepository,
-            IOrganizationUserRepository organizationUserRepository,
             IMailService mailService,
             IWebHostEnvironment environment,
             ILogger<LicensingService> logger,
@@ -40,7 +40,6 @@ namespace Bit.Core.Services
         {
             _userRepository = userRepository;
             _organizationRepository = organizationRepository;
-            _organizationUserRepository = organizationUserRepository;
             _mailService = mailService;
             _logger = logger;
             _globalSettings = globalSettings;
@@ -97,7 +96,8 @@ namespace Bit.Core.Services
                     continue;
                 }
 
-                var totalLicensedOrgs = enabledOrgs.Count(o => o.LicenseKey.Equals(license.LicenseKey));
+                // TODO: Null Reassuring Justification
+                var totalLicensedOrgs = enabledOrgs.Count(o => o.LicenseKey!.Equals(license.LicenseKey));
                 if (totalLicensedOrgs > 1)
                 {
                     await DisableOrganizationAsync(org, license, "Multiple organizations.");
@@ -118,7 +118,7 @@ namespace Bit.Core.Services
             }
         }
 
-        private async Task DisableOrganizationAsync(Organization org, ILicense license, string reason)
+        private async Task DisableOrganizationAsync(Organization org, ILicense? license, string reason)
         {
             _logger.LogInformation(Constants.BypassFiltersEventId, null,
                 "Organization {0} ({1}) has an invalid license and is being disabled. Reason: {2}",
@@ -208,7 +208,7 @@ namespace Bit.Core.Services
             return true;
         }
 
-        private async Task DisablePremiumAsync(User user, ILicense license, string reason)
+        private async Task DisablePremiumAsync(User user, ILicense? license, string reason)
         {
             _logger.LogInformation(Constants.BypassFiltersEventId, null,
                 "User {0}({1}) has an invalid license and premium is being disabled. Reason: {2}",
@@ -237,7 +237,7 @@ namespace Bit.Core.Services
             return license.Sign(_certificate);
         }
 
-        private UserLicense ReadUserLicense(User user)
+        private UserLicense? ReadUserLicense(User user)
         {
             var filePath = $"{_globalSettings.LicenseDirectory}/user/{user.Id}.json";
             if (!File.Exists(filePath))
@@ -249,9 +249,9 @@ namespace Bit.Core.Services
             return JsonSerializer.Deserialize<UserLicense>(data);
         }
 
-        public Task<OrganizationLicense> ReadOrganizationLicenseAsync(Organization organization) =>
+        public Task<OrganizationLicense?> ReadOrganizationLicenseAsync(Organization organization) =>
             ReadOrganizationLicenseAsync(organization.Id);
-        public async Task<OrganizationLicense> ReadOrganizationLicenseAsync(Guid organizationId)
+        public async Task<OrganizationLicense?> ReadOrganizationLicenseAsync(Guid organizationId)
         {
             var filePath = Path.Combine(_globalSettings.LicenseDirectory, "organization", $"{organizationId}.json");
             if (!File.Exists(filePath))

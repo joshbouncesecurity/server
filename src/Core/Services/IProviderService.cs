@@ -6,6 +6,8 @@ using Bit.Core.Entities.Provider;
 using Bit.Core.Models.Business;
 using Bit.Core.Models.Business.Provider;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public interface IProviderService
@@ -31,4 +33,3 @@ namespace Bit.Core.Services
         Task ResendProviderSetupInviteEmailAsync(Guid providerId, Guid ownerId);
     }
 }
-

@@ -7,6 +7,8 @@ using Bit.Core.Models.Business;
 using Bit.Core.Settings;
 using Bit.Core.Utilities;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class AzureQueueReferenceEventService : IReferenceEventService

@@ -6,6 +6,8 @@ using Bit.Core.Entities.Provider;
 using Bit.Core.Models.Business;
 using Bit.Core.Models.Mail;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NoopMailService : IMailService
@@ -111,7 +113,7 @@ namespace Bit.Core.Services
             return Task.FromResult(0);
         }
 
-        public Task SendLicenseExpiredAsync(IEnumerable<string> emails, string organizationName = null)
+        public Task SendLicenseExpiredAsync(IEnumerable<string> emails, string? organizationName = null)
         {
             return Task.FromResult(0);
         }

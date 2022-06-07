@@ -5,6 +5,8 @@ using Bit.Core.Entities;
 using Bit.Core.Entities.Provider;
 using Bit.Core.Enums;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public interface IEventService

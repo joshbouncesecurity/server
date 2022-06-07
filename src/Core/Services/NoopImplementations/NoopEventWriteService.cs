@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Bit.Core.Models.Data;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NoopEventWriteService : IEventWriteService

@@ -8,6 +8,8 @@ using Bit.Core.Repositories;
 using Bit.Core.Settings;
 using Microsoft.Azure.NotificationHubs;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NotificationHubPushRegistrationService : IPushRegistrationService
@@ -15,7 +17,7 @@ namespace Bit.Core.Services
         private readonly IInstallationDeviceRepository _installationDeviceRepository;
         private readonly GlobalSettings _globalSettings;
 
-        private NotificationHubClient _client = null;
+        private readonly NotificationHubClient _client;
 
         public NotificationHubPushRegistrationService(
             IInstallationDeviceRepository installationDeviceRepository,
@@ -40,12 +42,11 @@ namespace Bit.Core.Services
             {
                 InstallationId = deviceId,
                 PushChannel = pushToken,
-                Templates = new Dictionary<string, InstallationTemplate>()
-            };
-
-            installation.Tags = new List<string>
-            {
-                $"userId:{userId}"
+                Templates = new Dictionary<string, InstallationTemplate>(),
+                Tags = new List<string>
+                {
+                    $"userId:{userId}"
+                }
             };
 
             if (!string.IsNullOrWhiteSpace(identifier))
@@ -53,7 +54,7 @@ namespace Bit.Core.Services
                 installation.Tags.Add("deviceIdentifier:" + identifier);
             }
 
-            string payloadTemplate = null, messageTemplate = null, badgeMessageTemplate = null;
+            string? payloadTemplate = null, messageTemplate = null, badgeMessageTemplate = null;
             switch (type)
             {
                 case DeviceType.Android:
@@ -95,7 +96,7 @@ namespace Bit.Core.Services
             }
         }
 
-        private void BuildInstallationTemplate(Installation installation, string templateId, string templateBody,
+        private void BuildInstallationTemplate(Installation installation, string templateId, string? templateBody,
             string userId, string identifier)
         {
             if (templateBody == null)

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+#nullable enable
+
 namespace Bit.Core.Sso
 {
     public static class SamlSigningAlgorithms

@@ -13,6 +13,8 @@ using Bit.Core.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.NotificationHubs;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class NotificationHubPushNotificationService : IPushNotificationService
@@ -21,7 +23,7 @@ namespace Bit.Core.Services
         private readonly GlobalSettings _globalSettings;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        private NotificationHubClient _client = null;
+        private readonly NotificationHubClient _client;
 
         public NotificationHubPushNotificationService(
             IInstallationDeviceRepository installationDeviceRepository,
@@ -38,20 +40,20 @@ namespace Bit.Core.Services
 
         public async Task PushSyncCipherCreateAsync(Cipher cipher, IEnumerable<Guid> collectionIds)
         {
-            await PushCipherAsync(cipher, PushType.SyncCipherCreate, collectionIds);
+            await PushCipherAsync(cipher, PushType.SyncCipherCreate);
         }
 
         public async Task PushSyncCipherUpdateAsync(Cipher cipher, IEnumerable<Guid> collectionIds)
         {
-            await PushCipherAsync(cipher, PushType.SyncCipherUpdate, collectionIds);
+            await PushCipherAsync(cipher, PushType.SyncCipherUpdate);
         }
 
         public async Task PushSyncCipherDeleteAsync(Cipher cipher)
         {
-            await PushCipherAsync(cipher, PushType.SyncLoginDelete, null);
+            await PushCipherAsync(cipher, PushType.SyncLoginDelete);
         }
 
-        private async Task PushCipherAsync(Cipher cipher, PushType type, IEnumerable<Guid> collectionIds)
+        private async Task PushCipherAsync(Cipher cipher, PushType type)
         {
             if (cipher.OrganizationId.HasValue)
             {
@@ -179,8 +181,8 @@ namespace Bit.Core.Services
             await SendPayloadToUserAsync(orgId.ToString(), type, payload, GetContextIdentifier(excludeCurrentContext));
         }
 
-        public async Task SendPayloadToUserAsync(string userId, PushType type, object payload, string identifier,
-            string deviceId = null)
+        public async Task SendPayloadToUserAsync(string userId, PushType type, object payload, string? identifier,
+            string? deviceId = null)
         {
             var tag = BuildTag($"template:payload_userId:{SanitizeTagInput(userId)}", identifier);
             await SendPayloadAsync(tag, type, payload);
@@ -191,7 +193,7 @@ namespace Bit.Core.Services
         }
 
         public async Task SendPayloadToOrganizationAsync(string orgId, PushType type, object payload, string identifier,
-            string deviceId = null)
+            string? deviceId = null)
         {
             var tag = BuildTag($"template:payload && organizationId:{SanitizeTagInput(orgId)}", identifier);
             await SendPayloadAsync(tag, type, payload);
@@ -201,7 +203,7 @@ namespace Bit.Core.Services
             }
         }
 
-        private string GetContextIdentifier(bool excludeCurrentContext)
+        private string? GetContextIdentifier(bool excludeCurrentContext)
         {
             if (!excludeCurrentContext)
             {
@@ -213,7 +215,7 @@ namespace Bit.Core.Services
             return currentContext?.DeviceIdentifier;
         }
 
-        private string BuildTag(string tag, string identifier)
+        private string BuildTag(string tag, string? identifier)
         {
             if (!string.IsNullOrWhiteSpace(identifier))
             {

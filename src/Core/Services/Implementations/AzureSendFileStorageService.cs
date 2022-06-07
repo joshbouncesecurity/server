@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -9,6 +10,8 @@ using Bit.Core.Entities;
 using Bit.Core.Enums;
 using Bit.Core.Settings;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class AzureSendFileStorageService : ISendFileStorageService
@@ -16,7 +19,7 @@ namespace Bit.Core.Services
         public const string FilesContainerName = "sendfiles";
         private static readonly TimeSpan _downloadLinkLiveTime = TimeSpan.FromMinutes(1);
         private readonly BlobServiceClient _blobServiceClient;
-        private BlobContainerClient _sendFilesContainerClient;
+        private BlobContainerClient? _sendFilesContainerClient;
 
         public FileUploadType FileUploadType => FileUploadType.Azure;
 
@@ -42,7 +45,8 @@ namespace Bit.Core.Services
             }
             else
             {
-                metadata.Add("organizationId", send.OrganizationId.Value.ToString());
+                // Null Reassuring Justification: If UserId doesn't have a value OrganizationId must have one
+                metadata.Add("organizationId", send.OrganizationId!.Value.ToString());
             }
 
             var headers = new BlobHttpHeaders
@@ -72,7 +76,7 @@ namespace Bit.Core.Services
             await InitAsync();
         }
 
-        public async Task<string> GetSendFileDownloadUrlAsync(Send send, string fileId)
+        public async Task<string?> GetSendFileDownloadUrlAsync(Send send, string fileId)
         {
             await InitAsync();
             var blobClient = _sendFilesContainerClient.GetBlobClient(BlobName(send, fileId));
@@ -80,7 +84,7 @@ namespace Bit.Core.Services
             return sasUri.ToString();
         }
 
-        public async Task<string> GetSendFileUploadUrlAsync(Send send, string fileId)
+        public async Task<string?> GetSendFileUploadUrlAsync(Send send, string fileId)
         {
             await InitAsync();
             var blobClient = _sendFilesContainerClient.GetBlobClient(BlobName(send, fileId));
@@ -93,7 +97,6 @@ namespace Bit.Core.Services
             await InitAsync();
 
             var blobClient = _sendFilesContainerClient.GetBlobClient(BlobName(send, fileId));
-
             try
             {
                 var blobProperties = await blobClient.GetPropertiesAsync();
@@ -105,7 +108,8 @@ namespace Bit.Core.Services
                 }
                 else
                 {
-                    metadata["organizationId"] = send.OrganizationId.Value.ToString();
+                    // Null Reassuring Justification: If UserId doesn't have a value OrganizationId must have one
+                    metadata["organizationId"] = send.OrganizationId!.Value.ToString();
                 }
                 await blobClient.SetMetadataAsync(metadata);
 
@@ -123,12 +127,13 @@ namespace Bit.Core.Services
 
                 return (true, length);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return (false, null);
             }
         }
 
+        [MemberNotNull(nameof(_sendFilesContainerClient))]
         private async Task InitAsync()
         {
             if (_sendFilesContainerClient == null)

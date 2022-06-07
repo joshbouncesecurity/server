@@ -17,6 +17,8 @@ using Bit.Core.Settings;
 using Bit.Core.Utilities;
 using Microsoft.AspNetCore.DataProtection;
 
+#nullable enable
+
 namespace Bit.CommCore.Services
 {
     public class ProviderService : IProviderService
@@ -135,7 +137,7 @@ namespace Bit.CommCore.Services
                 throw new InvalidOperationException("Invalid permissions.");
             }
 
-            var emails = invite?.UserIdentifiers;
+            var emails = invite.UserIdentifiers;
             var invitingUser = await _providerUserRepository.GetByProviderUserAsync(invite.ProviderId, invite.InvitingUserId);
 
             var provider = await _providerRepository.GetByIdAsync(invite.ProviderId);
@@ -324,7 +326,7 @@ namespace Bit.CommCore.Services
 
             var providerUsers = await _providerUserRepository.GetManyAsync(providerUserIds);
             var users = await _userRepository.GetManyAsync(providerUsers.Where(pu => pu.UserId.HasValue)
-                .Select(pu => pu.UserId.Value));
+                .Select(pu => pu.UserId!.Value)); // Null Reassuring Justification: It's been checked that UserId has a value in the Where
             var keyedUsers = users.ToDictionary(u => u.Id);
 
             if (!await HasConfirmedProviderAdminExceptAsync(providerId, providerUserIds))
@@ -414,7 +416,7 @@ namespace Bit.CommCore.Services
             await _eventService.LogProviderOrganizationEventAsync(providerOrganization, EventType.ProviderOrganization_Created);
 
             await _organizationService.InviteUsersAsync(organization.Id, user.Id,
-                new (OrganizationUserInvite, string)[]
+                new (OrganizationUserInvite, string?)[]
                 {
                     (
                         new OrganizationUserInvite

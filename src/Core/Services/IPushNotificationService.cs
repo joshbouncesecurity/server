@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public interface IPushNotificationService
@@ -22,8 +24,8 @@ namespace Bit.Core.Services
         Task PushSyncSendCreateAsync(Send send);
         Task PushSyncSendUpdateAsync(Send send);
         Task PushSyncSendDeleteAsync(Send send);
-        Task SendPayloadToUserAsync(string userId, PushType type, object payload, string identifier, string deviceId = null);
+        Task SendPayloadToUserAsync(string userId, PushType type, object payload, string identifier, string? deviceId = null);
         Task SendPayloadToOrganizationAsync(string orgId, PushType type, object payload, string identifier,
-            string deviceId = null);
+            string? deviceId = null);
     }
 }

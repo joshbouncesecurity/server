@@ -3,13 +3,15 @@ using System.Threading.Tasks;
 using Azure.Storage.Queues;
 using Bit.Core.Settings;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public class AzureQueueBlockIpService : IBlockIpService
     {
         private readonly QueueClient _blockIpQueueClient;
         private readonly QueueClient _unblockIpQueueClient;
-        private Tuple<string, bool, DateTime> _lastBlock;
+        private Tuple<string, bool, DateTime>? _lastBlock;
 
         public AzureQueueBlockIpService(
             GlobalSettings globalSettings)

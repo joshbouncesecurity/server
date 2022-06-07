@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Bit.Core.Entities;
 using Bit.Core.Enums;
 
+#nullable enable
+
 namespace Bit.Core.Services
 {
     public interface ISendFileStorageService
@@ -13,8 +15,8 @@ namespace Bit.Core.Services
         Task DeleteFileAsync(Send send, string fileId);
         Task DeleteFilesForOrganizationAsync(Guid organizationId);
         Task DeleteFilesForUserAsync(Guid userId);
-        Task<string> GetSendFileDownloadUrlAsync(Send send, string fileId);
-        Task<string> GetSendFileUploadUrlAsync(Send send, string fileId);
+        Task<string?> GetSendFileDownloadUrlAsync(Send send, string fileId);
+        Task<string?> GetSendFileUploadUrlAsync(Send send, string fileId);
         Task<(bool, long?)> ValidateFileAsync(Send send, string fileId, long expectedFileSize, long leeway);
     }
 }
