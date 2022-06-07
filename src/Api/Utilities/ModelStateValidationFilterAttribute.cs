@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using InternalApi = Bit.Core.Models.Api;
 
+#nullable enable
+
 namespace Bit.Api.Utilities
 {
     public class ModelStateValidationFilterAttribute : SharedWeb.Utilities.ModelStateValidationFilterAttribute

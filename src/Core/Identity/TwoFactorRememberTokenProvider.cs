@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+#nullable enable
+
 namespace Bit.Core.Identity
 {
     public class TwoFactorRememberTokenProvider : DataProtectorTokenProvider<User>

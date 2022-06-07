@@ -17,7 +17,7 @@ namespace Bit.Core.Identity
         }
 
         public override Task<IdentityUser> FindByEmailAsync(string normalizedEmail,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             var usersCsv = _configuration["adminSettings:admins"];
             if (!CoreHelpers.SettingHasValue(usersCsv))
@@ -62,7 +62,7 @@ namespace Bit.Core.Identity
         }
 
         public override Task<IdentityUser> FindByIdAsync(string userId,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             return FindByEmailAsync(userId, cancellationToken);
         }

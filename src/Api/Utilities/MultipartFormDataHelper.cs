@@ -9,13 +9,15 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
+#nullable enable
+
 namespace Bit.Api.Utilities
 {
     public static class MultipartFormDataHelper
     {
-        private static readonly FormOptions _defaultFormOptions = new FormOptions();
+        private static readonly FormOptions _defaultFormOptions = new();
 
-        public static async Task GetFileAsync(this HttpRequest request, Func<Stream, string, string, Task> callback)
+        public static async Task GetFileAsync(this HttpRequest request, Func<Stream, string, string?, Task> callback)
         {
             var boundary = GetBoundary(MediaTypeHeaderValue.Parse(request.ContentType),
                 _defaultFormOptions.MultipartBoundaryLengthLimit);
@@ -38,7 +40,7 @@ namespace Bit.Api.Utilities
                     else if (HasDispositionName(firstContent, "key"))
                     {
                         // New style with key, then data
-                        string key = null;
+                        string? key = null;
                         using (var sr = new StreamReader(firstSection.Body))
                         {
                             key = await sr.ReadToEndAsync();
@@ -56,18 +58,14 @@ namespace Bit.Api.Utilities
                                     await callback(secondSection.Body, fileName, key);
                                 }
                             }
-
-                            secondSection = null;
                         }
                     }
                 }
-
-                firstSection = null;
             }
         }
 
-        public static async Task GetSendFileAsync(this HttpRequest request, Func<Stream, string,
-            SendRequestModel, Task> callback)
+        public static async Task GetSendFileAsync(this HttpRequest request, 
+        Func<Stream, string, SendRequestModel, Task> callback)
         {
             var boundary = GetBoundary(MediaTypeHeaderValue.Parse(request.ContentType),
                 _defaultFormOptions.MultipartBoundaryLengthLimit);
@@ -88,16 +86,13 @@ namespace Bit.Api.Utilities
                             using (secondSection.Body)
                             {
                                 var model = await JsonSerializer.DeserializeAsync<SendRequestModel>(firstSection.Body);
-                                await callback(secondSection.Body, fileName, model);
+                                // TODO: NRJ
+                                await callback(secondSection.Body, fileName, model!);
                             }
                         }
-
-                        secondSection = null;
                     }
 
                 }
-
-                firstSection = null;
             }
         }
 
@@ -118,7 +113,6 @@ namespace Bit.Api.Utilities
                         await callback(dataSection.Body);
                     }
                 }
-                dataSection = null;
             }
         }
 

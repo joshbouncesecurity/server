@@ -21,14 +21,14 @@ namespace Bit.Core.Identity
         }
 
         public override async Task<IdentityUser> FindByEmailAsync(string normalizedEmail,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             var user = await _userRepository.GetByEmailAsync(normalizedEmail);
             return user?.ToIdentityUser(await _userService.TwoFactorIsEnabledAsync(user));
         }
 
         public override async Task<IdentityUser> FindByIdAsync(string userId,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             if (!Guid.TryParse(userId, out var userIdGuid))
             {

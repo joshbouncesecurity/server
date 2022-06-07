@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Entities;
 using Microsoft.AspNetCore.Identity;
+
+#nullable enable
 
 namespace Bit.Core.Identity
 {
@@ -10,21 +13,26 @@ namespace Bit.Core.Identity
     {
         public void Dispose() { }
 
+
+        [DoesNotReturn]
         public Task<IdentityResult> CreateAsync(Role role, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+        [DoesNotReturn]
         public Task<IdentityResult> DeleteAsync(Role role, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+        [DoesNotReturn]
         public Task<Role> FindByIdAsync(string roleId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+        [DoesNotReturn]
         public Task<Role> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -35,6 +43,7 @@ namespace Bit.Core.Identity
             return Task.FromResult(role.Name);
         }
 
+        [DoesNotReturn]
         public Task<string> GetRoleIdAsync(Role role, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -56,6 +65,7 @@ namespace Bit.Core.Identity
             return Task.FromResult(0);
         }
 
+        [DoesNotReturn]
         public Task<IdentityResult> UpdateAsync(Role role, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

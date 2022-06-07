@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
+#nullable enable
+
 namespace Bit.Api.Utilities
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]

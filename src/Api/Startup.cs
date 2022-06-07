@@ -23,6 +23,8 @@ using Bit.SharedWeb.Utilities;
 using Bit.CommCore.Utilities;
 #endif
 
+#nullable enable
+
 namespace Bit.Api
 {
     public class Startup

@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Bit.Api.Controllers
 {
     [Route("sends")]
@@ -33,7 +35,6 @@ namespace Bit.Api.Controllers
         private readonly ISendFileStorageService _sendFileStorageService;
         private readonly ILogger<SendsController> _logger;
         private readonly GlobalSettings _globalSettings;
-        private readonly ICurrentContext _currentContext;
 
         public SendsController(
             ISendRepository sendRepository,
@@ -41,8 +42,7 @@ namespace Bit.Api.Controllers
             ISendService sendService,
             ISendFileStorageService sendFileStorageService,
             ILogger<SendsController> logger,
-            GlobalSettings globalSettings,
-            ICurrentContext currentContext)
+            GlobalSettings globalSettings)
         {
             _sendRepository = sendRepository;
             _userService = userService;
@@ -50,7 +50,6 @@ namespace Bit.Api.Controllers
             _sendFileStorageService = sendFileStorageService;
             _logger = logger;
             _globalSettings = globalSettings;
-            _currentContext = currentContext;
         }
 
         [AllowAnonymous]
@@ -135,10 +134,11 @@ namespace Bit.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<SendResponseModel> Get(string id)
+        public async Task<SendResponseModel> Get(Guid id)
         {
-            var userId = _userService.GetProperUserId(User).Value;
-            var send = await _sendRepository.GetByIdAsync(new Guid(id));
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
+            var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
             {
                 throw new NotFoundException();
@@ -150,7 +150,8 @@ namespace Bit.Api.Controllers
         [HttpGet("")]
         public async Task<ListResponseModel<SendResponseModel>> Get()
         {
-            var userId = _userService.GetProperUserId(User).Value;
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
             var sends = await _sendRepository.GetManyByUserIdAsync(userId);
             var responses = sends.Select(s => new SendResponseModel(s, _globalSettings));
             return new ListResponseModel<SendResponseModel>(responses);
@@ -160,7 +161,8 @@ namespace Bit.Api.Controllers
         public async Task<SendResponseModel> Post([FromBody] SendRequestModel model)
         {
             model.ValidateCreation();
-            var userId = _userService.GetProperUserId(User).Value;
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
             var send = model.ToSend(userId, _sendService);
             await _sendService.SaveSendAsync(send);
             return new SendResponseModel(send, _globalSettings);
@@ -172,16 +174,17 @@ namespace Bit.Api.Controllers
         [DisableFormValueModelBinding]
         public async Task<SendResponseModel> PostFile()
         {
-            if (!Request?.ContentType.Contains("multipart/") ?? true)
+            if (!Request.ContentType.Contains("multipart/"))
             {
                 throw new BadRequestException("Invalid content.");
             }
 
-            Send send = null;
+            Send? send = null;
             await Request.GetSendFileAsync(async (stream, fileName, model) =>
             {
                 model.ValidateCreation();
-                var userId = _userService.GetProperUserId(User).Value;
+                // TODO: NRJ
+                var userId = _userService.GetProperUserId(User)!.Value;
                 var (madeSend, madeData) = model.ToSend(userId, fileName, _sendService);
                 send = madeSend;
                 await _sendService.SaveFileSendAsync(send, madeData, model.FileLength.GetValueOrDefault(0));
@@ -210,7 +213,8 @@ namespace Bit.Api.Controllers
                 throw new BadRequestException($"Max file size is {SendService.MAX_FILE_SIZE_READABLE}.");
             }
 
-            var userId = _userService.GetProperUserId(User).Value;
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
             var (send, data) = model.ToSend(userId, model.File.FileName, _sendService);
             var uploadUrl = await _sendService.SaveFileSendAsync(send, data, model.FileLength.Value);
             return new SendFileUploadDataResponseModel
@@ -222,12 +226,18 @@ namespace Bit.Api.Controllers
         }
 
         [HttpGet("{id}/file/{fileId}")]
-        public async Task<SendFileUploadDataResponseModel> RenewFileUpload(string id, string fileId)
+        public async Task<SendFileUploadDataResponseModel> RenewFileUpload(Guid id, string fileId)
         {
-            var userId = _userService.GetProperUserId(User).Value;
-            var sendId = new Guid(id);
-            var send = await _sendRepository.GetByIdAsync(sendId);
-            var fileData = JsonSerializer.Deserialize<SendFileData>(send?.Data);
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
+            var send = await _sendRepository.GetByIdAsync(id);
+
+            if (send == null)
+            {
+                throw new NotFoundException();
+            }
+
+            var fileData = JsonSerializer.Deserialize<SendFileData>(send.Data);
 
             if (send == null || send.Type != SendType.File || (send.UserId.HasValue && send.UserId.Value != userId) ||
                 !send.UserId.HasValue || fileData.Id != fileId || fileData.Validated)
@@ -251,7 +261,7 @@ namespace Bit.Api.Controllers
         [DisableFormValueModelBinding]
         public async Task PostFileForExistingSend(string id, string fileId)
         {
-            if (!Request?.ContentType.Contains("multipart/") ?? true)
+            if (!Request.ContentType.Contains("multipart/"))
             {
                 throw new BadRequestException("Invalid content.");
             }
@@ -298,11 +308,12 @@ namespace Bit.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<SendResponseModel> Put(string id, [FromBody] SendRequestModel model)
+        public async Task<SendResponseModel> Put(Guid id, [FromBody] SendRequestModel model)
         {
             model.ValidateEdit();
-            var userId = _userService.GetProperUserId(User).Value;
-            var send = await _sendRepository.GetByIdAsync(new Guid(id));
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
+            var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
             {
                 throw new NotFoundException();
@@ -313,10 +324,11 @@ namespace Bit.Api.Controllers
         }
 
         [HttpPut("{id}/remove-password")]
-        public async Task<SendResponseModel> PutRemovePassword(string id)
+        public async Task<SendResponseModel> PutRemovePassword(Guid id)
         {
-            var userId = _userService.GetProperUserId(User).Value;
-            var send = await _sendRepository.GetByIdAsync(new Guid(id));
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
+            var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
             {
                 throw new NotFoundException();
@@ -328,10 +340,11 @@ namespace Bit.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task Delete(string id)
+        public async Task Delete(Guid id)
         {
-            var userId = _userService.GetProperUserId(User).Value;
-            var send = await _sendRepository.GetByIdAsync(new Guid(id));
+            // TODO: NRJ
+            var userId = _userService.GetProperUserId(User)!.Value;
+            var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
             {
                 throw new NotFoundException();

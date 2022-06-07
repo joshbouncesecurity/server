@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using InternalApi = Bit.Core.Models.Api;
 
+#nullable enable
+
 namespace Bit.Api.Utilities
 {
     public class ExceptionHandlerFilterAttribute : ExceptionFilterAttribute
@@ -33,8 +35,8 @@ namespace Bit.Api.Utilities
                 return;
             }
 
-            ErrorResponseModel publicErrorModel = null;
-            InternalApi.ErrorResponseModel internalErrorModel = null;
+            ErrorResponseModel? publicErrorModel = null;
+            InternalApi.ErrorResponseModel? internalErrorModel = null;
             if (exception is BadRequestException badRequestException)
             {
                 context.HttpContext.Response.StatusCode = 400;
