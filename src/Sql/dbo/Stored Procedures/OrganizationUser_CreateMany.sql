@@ -18,7 +18,8 @@ BEGIN
         [CreationDate],
         [RevisionDate],
         [Permissions],
-        [ResetPasswordKey]
+        [ResetPasswordKey],
+        [Disabled]
         )
     SELECT
         OU.[Id],
@@ -33,7 +34,8 @@ BEGIN
         OU.[CreationDate],
         OU.[RevisionDate],
         OU.[Permissions],
-        OU.[ResetPasswordKey]
+        OU.[ResetPasswordKey],
+        OU.[Disabled]
     FROM
         @OrganizationUsersInput OU
 END

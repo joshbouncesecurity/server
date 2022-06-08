@@ -23,6 +23,7 @@ namespace Bit.Core.Entities
         public DateTime CreationDate { get; internal set; } = DateTime.UtcNow;
         public DateTime RevisionDate { get; internal set; } = DateTime.UtcNow;
         public string Permissions { get; set; }
+        public bool Disabled { get; set; } = false;
 
         public void SetNewId()
         {

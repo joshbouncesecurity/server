@@ -24,6 +24,7 @@ namespace Bit.Core.Models.Data.Organizations.OrganizationUsers
         public string Permissions { get; set; }
         public string ResetPasswordKey { get; set; }
         public bool UsesKeyConnector { get; set; }
+        public bool Disabled { get; set; } = false;
 
         public Dictionary<TwoFactorProviderType, TwoFactorProvider> GetTwoFactorProviders()
         {

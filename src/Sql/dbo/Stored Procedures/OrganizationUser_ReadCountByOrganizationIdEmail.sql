@@ -18,4 +18,5 @@ BEGIN
             (@OnlyUsers = 0 AND (OU.[Email] = @Email OR U.[Email] = @Email))
             OR (@OnlyUsers = 1 AND U.[Email] = @Email)
         )
+        AND [Disabled] = 0
 END

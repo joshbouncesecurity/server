@@ -31,7 +31,8 @@ SELECT
     OU.[Permissions],
     PO.[ProviderId],
     P.[Name] ProviderName,
-    SS.[Data] SsoConfig
+    SS.[Data] SsoConfig,
+    OU.[Disabled]
 FROM
     [dbo].[OrganizationUser] OU
 INNER JOIN

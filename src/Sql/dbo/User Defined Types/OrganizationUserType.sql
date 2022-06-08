@@ -11,5 +11,6 @@ CREATE TYPE [dbo].[OrganizationUserType] AS TABLE(
     [CreationDate] DATETIME2(7),
     [RevisionDate] DATETIME2(7),
     [Permissions] NVARCHAR(MAX),
-    [ResetPasswordKey] VARCHAR(MAX)
+    [ResetPasswordKey] VARCHAR(MAX),
+    [Disabled] BIT DEFAULT 0
 )

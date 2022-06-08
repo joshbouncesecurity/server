@@ -36,6 +36,7 @@ LEFT JOIN
 WHERE
     OU.[UserId] = @UserId
     AND OU.[Status] = 2 -- 2 = Confirmed
+    AND OU.[Disabled] = 0
     AND O.[Enabled] = 1
     AND (
         OU.[AccessAll] = 1

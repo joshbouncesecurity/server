@@ -15,4 +15,5 @@ BEGIN
         [dbo].[OrganizationUserView]
     WHERE
         [UserId] IN (SELECT [Id] FROM @UserIds)
+        AND [Disabled] = 0
 END

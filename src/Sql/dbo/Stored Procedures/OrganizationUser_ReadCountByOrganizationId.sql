@@ -10,4 +10,5 @@ BEGIN
         [dbo].[OrganizationUser]
     WHERE
         [OrganizationId] = @OrganizationId
+        AND [Disabled] = 0
 END

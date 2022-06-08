@@ -11,6 +11,7 @@ WITH [CTE] AS (
     WHERE
         [UserId] = @UserId
         AND [Status] = 2 -- Confirmed
+        AND [Disabled] = 0
 )
 SELECT
     C.*,

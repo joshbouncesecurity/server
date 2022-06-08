@@ -18,7 +18,8 @@ BEGIN
         [CreationDate] = OUI.[CreationDate],
         [RevisionDate] = OUI.[RevisionDate],
         [Permissions] = OUI.[Permissions],
-        [ResetPasswordKey] = OUI.[ResetPasswordKey]
+        [ResetPasswordKey] = OUI.[ResetPasswordKey],
+        [Disabled] = OUI.[Disabled]
     FROM
         [dbo].[OrganizationUser] OU
     INNER JOIN
