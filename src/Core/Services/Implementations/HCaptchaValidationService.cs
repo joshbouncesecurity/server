@@ -87,7 +87,7 @@ namespace Bit.Core.Services
             }
 
             using var hcaptchaResponse = await responseMessage.Content.ReadFromJsonAsync<HCaptchaResponse>();
-            response.Success = hcaptchaResponse!.Success; // Null Reassuring Justification: TODO: Need better reason
+            response.Success = hcaptchaResponse!.Success; // Null Reassuring Justification: We trust that we won't get a null object from HCaptcha
             var score = hcaptchaResponse.Score.GetValueOrDefault();
             response.MaybeBot = score >= _globalSettings.Captcha.MaybeBotScoreThreshold;
             response.IsBot = score >= _globalSettings.Captcha.IsBotScoreThreshold;

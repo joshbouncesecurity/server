@@ -86,7 +86,7 @@ namespace Bit.Api.Utilities
                             using (secondSection.Body)
                             {
                                 var model = await JsonSerializer.DeserializeAsync<SendRequestModel>(firstSection.Body);
-                                // TODO: NRJ
+                                // Null Reassuring Justification: We trust that Deserialize won't return a null object
                                 await callback(secondSection.Body, fileName, model!);
                             }
                         }

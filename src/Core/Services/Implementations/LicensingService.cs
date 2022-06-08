@@ -96,8 +96,7 @@ namespace Bit.Core.Services
                     continue;
                 }
 
-                // TODO: Null Reassuring Justification
-                var totalLicensedOrgs = enabledOrgs.Count(o => o.LicenseKey!.Equals(license.LicenseKey));
+                var totalLicensedOrgs = enabledOrgs.Count(o => o.LicenseKey?.Equals(license.LicenseKey) ?? false);
                 if (totalLicensedOrgs > 1)
                 {
                     await DisableOrganizationAsync(org, license, "Multiple organizations.");

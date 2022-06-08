@@ -135,7 +135,7 @@ namespace Bit.Api.Controllers
         [HttpGet("{id}")]
         public async Task<SendResponseModel> Get(Guid id)
         {
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
@@ -149,7 +149,7 @@ namespace Bit.Api.Controllers
         [HttpGet("")]
         public async Task<ListResponseModel<SendResponseModel>> Get()
         {
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var sends = await _sendRepository.GetManyByUserIdAsync(userId);
             var responses = sends.Select(s => new SendResponseModel(s, _globalSettings));
@@ -160,7 +160,7 @@ namespace Bit.Api.Controllers
         public async Task<SendResponseModel> Post([FromBody] SendRequestModel model)
         {
             model.ValidateCreation();
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var send = model.ToSend(userId, _sendService);
             await _sendService.SaveSendAsync(send);
@@ -182,7 +182,7 @@ namespace Bit.Api.Controllers
             await Request.GetSendFileAsync(async (stream, fileName, model) =>
             {
                 model.ValidateCreation();
-                // TODO: NRJ
+                // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
                 var userId = _userService.GetProperUserId(User)!.Value;
                 var (madeSend, madeData) = model.ToSend(userId, fileName, _sendService);
                 send = madeSend;
@@ -212,7 +212,7 @@ namespace Bit.Api.Controllers
                 throw new BadRequestException($"Max file size is {SendService.MAX_FILE_SIZE_READABLE}.");
             }
 
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var (send, data) = model.ToSend(userId, model.File.FileName, _sendService);
             var uploadUrl = await _sendService.SaveFileSendAsync(send, data, model.FileLength.Value);
@@ -227,7 +227,7 @@ namespace Bit.Api.Controllers
         [HttpGet("{id}/file/{fileId}")]
         public async Task<SendFileUploadDataResponseModel> RenewFileUpload(Guid id, string fileId)
         {
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var send = await _sendRepository.GetByIdAsync(id);
 
@@ -310,7 +310,7 @@ namespace Bit.Api.Controllers
         public async Task<SendResponseModel> Put(Guid id, [FromBody] SendRequestModel model)
         {
             model.ValidateEdit();
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
@@ -325,7 +325,7 @@ namespace Bit.Api.Controllers
         [HttpPut("{id}/remove-password")]
         public async Task<SendResponseModel> PutRemovePassword(Guid id)
         {
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)
@@ -341,7 +341,7 @@ namespace Bit.Api.Controllers
         [HttpDelete("{id}")]
         public async Task Delete(Guid id)
         {
-            // TODO: NRJ
+            // Null Reassuring Justification: An endpoint behind an Authorize filter should have no problem returning the Id
             var userId = _userService.GetProperUserId(User)!.Value;
             var send = await _sendRepository.GetByIdAsync(id);
             if (send == null || send.UserId != userId)

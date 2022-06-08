@@ -478,9 +478,9 @@ namespace Bit.Core.Utilities
         {
             if (string.IsNullOrWhiteSpace(_version))
             {
-                // TODO: NRJ
+                // Null Reassuring Justification: Would only return null if called from unmanaged code and this is not that
                 _version = Assembly.GetEntryAssembly()!
-                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()! // NRJ: This is a required attribute
                     .InformationalVersion;
             }
 
@@ -794,7 +794,7 @@ namespace Bit.Core.Utilities
             return claims;
         }
 
-        public static T LoadClassFromJsonData<T>(string jsonData) where T : new()
+        public static T? LoadClassFromJsonData<T>(string jsonData) where T : new()
         {
             if (string.IsNullOrWhiteSpace(jsonData))
             {
@@ -806,8 +806,7 @@ namespace Bit.Core.Utilities
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
 
-            // TODO: NRJ
-            return System.Text.Json.JsonSerializer.Deserialize<T>(jsonData, options)!;
+            return System.Text.Json.JsonSerializer.Deserialize<T>(jsonData, options);
         }
 
         public static string ClassToJsonData<T>(T data)

@@ -30,7 +30,7 @@ namespace Bit.Core.Services
         {
             await InitAsync();
             var path = FilePath(send, fileId);
-            // TODO: NRJ
+            // Null Reassuring Justification: Path.GetDirectoryName will only return null if the path we give is a root directory and we know it is not
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             using (var fs = File.Create(path))
             {
@@ -44,7 +44,7 @@ namespace Bit.Core.Services
             await InitAsync();
             var path = FilePath(send, fileId);
             DeleteFileIfExists(path);
-            // TODO: NRJ
+            // Null Reassuring Justification: Path.GetDirectoryName will only return null if the path we give is a root directory and we know it is not
             DeleteDirectoryIfExistsAndEmpty(Path.GetDirectoryName(path)!);
         }
 

@@ -15,7 +15,8 @@ namespace Bit.Api.Utilities
 {
     public static class ApiHelpers
     {
-        public static string? EventGridKey { get; set; }
+        // Null Reassuring Justification: We are just trusting that this will be set in Startup but also we should maybe refactor this
+        public static string EventGridKey { get; set; } = default!;
         public async static Task<T?> ReadJsonFileFromBody<T>(HttpContext httpContext, IFormFile file, long maxSize = 51200)
         {
             T? obj = default;
@@ -44,8 +45,7 @@ namespace Bit.Api.Utilities
         {
             var queryKey = request.Query["key"];
 
-            // TODO: NRJ
-            if (!CoreHelpers.FixedTimeEquals(queryKey, EventGridKey!))
+            if (!CoreHelpers.FixedTimeEquals(queryKey, EventGridKey))
             {
                 return new UnauthorizedObjectResult("Authentication failed. Please use a valid key.");
             }
