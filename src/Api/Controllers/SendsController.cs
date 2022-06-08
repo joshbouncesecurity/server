@@ -236,9 +236,10 @@ namespace Bit.Api.Controllers
                 throw new NotFoundException();
             }
 
-            var fileData = JsonSerializer.Deserialize<SendFileData>(send.Data);
+            // Null Reassuring Justification: We trust that we have blocked them from saving null
+            var fileData = JsonSerializer.Deserialize<SendFileData>(send.Data)!;
 
-            if (send == null || send.Type != SendType.File || (send.UserId.HasValue && send.UserId.Value != userId) ||
+            if (send.Type != SendType.File || (send.UserId.HasValue && send.UserId.Value != userId) ||
                 !send.UserId.HasValue || fileData.Id != fileId || fileData.Validated)
             {
                 // Not found if Send isn't found, user doesn't have access, request is faulty,
